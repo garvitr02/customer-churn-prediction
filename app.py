@@ -1,45 +1,48 @@
-
-import numpy as np
 import pickle
 import pandas as pd
 import streamlit as st
 
-from PIL import Image
+st.set_page_config(
+    page_title="Churn Prediction Model",
+    layout="centered"
+)
+model_path = "C:\\Users\\garvi\\1_MachineLearning\\CustomerChurn\\model.pkl"
 
-import os
+with open(model_path, "rb") as pickle_in:
+    classifier = pickle.load(pickle_in)
 
-model_path = os.path.join("C:\\Users\\garvi\\1_MachineLearning\\CustomerChurn", "model.pkl")
-
-pickle_in = open(model_path, "rb")
-
-classifier = pickle.load(pickle_in)
-def predict_Customer_Churn(Age,Gender,Location, Subscription_Length_Months, Monthly_Bill, Total_Usage_GB):
-
-    prediction = classifier.predict([[Age,Gender,Location, Subscription_Length_Months, Monthly_Bill, Total_Usage_GB]])
-    print(prediction)
-    return prediction
+st.markdown("# Customer Churn Prediction Model")
 
 
-def main():
-    st.title("Customer Churn Predictor")
-    html_temp = """
-    <div style="background-color:tomato;padding:10px">
-    <h2 style="color:white;text-align:center;">Customer Churn Predictor App </h2>
-    </div>
-    """
-    st.markdown(html_temp, unsafe_allow_html=True)
-
-    Age = st.text_input("Age", "Type Here")
-    Gender = st.text_input("Gender", "Type Here")
-    Location = st.text_input("Location", "Type Here")
-    Subscription_Length_Months = st.text_input("Subscription_Length_Months", "Type Here")
-    Monthly_Bill = st.text_input("Monthly_Bill", "Type Here")
-    Total_Usage_GB = st.text_input("Total_Usage_GB", "Type Here")
-    result = ""
-    if st.button("Predict"):
-        result = predict_Customer_Churn(Age,Gender,Location, Subscription_Length_Months, Monthly_Bill, Total_Usage_GB)
-    st.success('The output is {}'.format(result))
-if __name__ == '__main__':
-    main()
+age = st.text_input(label="Age")
+gender = st.selectbox(label="Gender", options=['Male', 'Female'])
+location = st.selectbox(
+                label="Location",
+                options=['Houston', 'Los Angeles', 'Miami', 'Chicago', 'New York']
+            )
+subscription_length_months = st.text_input(label="Number of months of subscription")
+monthly_bill = st.text_input(label="monthly bill")
+total_used_gb = st.text_input(label="How many GB of content is consumed")
 
 
+features = [{
+    'Age': age,
+    'Gender': gender,
+    'Location': location,
+    'Subscription_Length_Months': subscription_length_months,
+    'Monthly_Bill': monthly_bill,
+    'Total_Usage_GB': total_used_gb
+}]
+
+
+features = pd.DataFrame(features)
+
+
+if total_used_gb:
+    output = classifier.predict(features)
+    if output == 1:
+        st.markdown("### :red[Churn Warning]")
+        st.write("With a '1' value, the customer might be leaving.")
+    if output == 0:
+        st.markdown("### :green[Churn Resistant]")
+        st.write("With a '0' value, the cutomer is likely to stay.")
